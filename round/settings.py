@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from MyConfig import dbConfig
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -86,7 +87,6 @@ AUTHENTICATION_BACKENDS = [
             'django.contrib.auth.backends.ModelBackend',
         # `allauth` specific authentication methods, such as login by e-mail
             'allauth.account.auth_backends.AuthenticationBackend',
-     
 ]
 
 SITE_ID = 1
@@ -99,8 +99,12 @@ WSGI_APPLICATION = 'round.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': dbConfig()["database"],
+        'USER': dbConfig()["user"],
+        'PASSWORD': dbConfig()["password"],
+        'HOST': dbConfig()["host"],
+        'PORT': '3306'
     }
 }
 
