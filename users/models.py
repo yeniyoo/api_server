@@ -37,9 +37,9 @@ class MyUser(AbstractBaseUser,  PermissionsMixin):
     nickname = models.CharField(
         max_length=10,
         null=True,
-        default='')
+        default=None)
     gender = models.BooleanField(default=True)
-    age = models.IntegerField
+    age = models.IntegerField(null=True, default=None)  # 일단 보류(null 값으로)
     point = models.IntegerField(default=0)
     join_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
