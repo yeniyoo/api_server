@@ -7,4 +7,4 @@ class UserSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        field = ('email', 'gender')
+        field = ('fb_id', 'gender')
