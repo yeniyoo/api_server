@@ -47,7 +47,8 @@ THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'users'
+    'users',
+    'apps'
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS

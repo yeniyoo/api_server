@@ -3,7 +3,7 @@ import requests
 
 # Create response data
 def createResponseData(code, msg, data):
-    res_data = {"stats": {"code": code, "message": msg}}
+    res_data = {"status": {"code": code, "message": msg}}
     if data is not None:
         res_data['data'] = data
     return res_data

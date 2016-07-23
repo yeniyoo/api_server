@@ -35,3 +35,11 @@ def facebookAuth(request):
                 createResponseData(1, "incorrect access_token", None),
                 status=status.HTTP_403_FORBIDDEN
             )
+
+
+@api_view(['POST', 'PUT'])
+def ageSetting(request):
+    if request.method == 'POST':  # 더미
+        return Response(createResponseData(0, "success", None))
+    if request.method == 'PUT':  # 더미
+        return Response(createResponseData(0, "success", None))
