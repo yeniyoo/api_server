@@ -12,14 +12,15 @@ def facebookAuth(request):
     if request.method == 'POST':
         access_token = request.POST['access_token']
         fb_info = fbGraphApi(access_token)
-        if 'email' in fb_info:
-            user = MyUser.objects.filter(email=fb_info['email'], is_active=1)
+        if 'id' in fb_info:
+            user = MyUser.objects.filter(fb_id=fb_info['id'], is_active=1)
             if not user:
                 # 회원가입
                 fb_info['gender'] = True if (fb_info['gender'] == 'male') else False
+                fb_info['fb_id'] = fb_info.pop('id')  # insert serializer
                 serializer = UserSerializers(data=fb_info)
                 if serializer.is_valid():
-                    user = MyUser.objects.filter(email=serializer.save(), is_active=1)
+                    user = MyUser.objects.filter(fb_id=serializer.save(), is_active=1)
                 else:
                     return Response(
                         createResponseData(1, "server error", None),

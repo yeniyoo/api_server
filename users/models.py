@@ -29,9 +29,9 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser,  PermissionsMixin):
-    email = models.EmailField(
-        verbose_name='email',
-        max_length=255,
+    fb_id = models.CharField(
+        verbose_name='fb_id',
+        max_length=250,
         unique=True,
     )
     nickname = models.CharField(
@@ -39,7 +39,7 @@ class MyUser(AbstractBaseUser,  PermissionsMixin):
         null=True,
         default=None)
     gender = models.BooleanField(default=True)
-    age = models.IntegerField(null=True, default=None)  # 일단 보류(null 값으로)
+    age = models.IntegerField(null=True, default=None)
     point = models.IntegerField(default=0)
     join_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
@@ -49,19 +49,19 @@ class MyUser(AbstractBaseUser,  PermissionsMixin):
 
     objects = MyUserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'fb_id'
     REQUIRED_FIELDS = ['nickname']
 
     def get_full_name(self):
-        # The user is identified by their email address
-        return self.email
+        # The user is identified by their fb_id
+        return self.fb_id
 
     def get_short_name(self):
-        # The user is identified by their email address
-        return self.email
+        # The user is identified by their fb_id
+        return self.fb_id
 
     def __str__(self):
-        return self.email
+        return self.fb_id
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
