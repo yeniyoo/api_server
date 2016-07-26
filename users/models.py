@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 
 
 class MyUserManager(BaseUserManager):
+    # 수정했습니다.
     def create_user(self, fb_id, nickname, password=None):
         if not fb_id:
             raise ValueError('Users must have an fb_id')
