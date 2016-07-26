@@ -29,11 +29,16 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser,  PermissionsMixin):
+
+    # facebook id는 email일 수도 있고, phone number일 수도 있다.
     fb_id = models.CharField(
         verbose_name='fb_id',
         max_length=250,
         unique=True,
     )
+
+    # 혹시몰라서 남겨둔 field 이다.
+    # 원칙적으로 nickname은 어떤 round에 참여한 어떤 user마다 매겨진다.
     nickname = models.CharField(
         max_length=10,
         null=True,
