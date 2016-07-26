@@ -18,8 +18,5 @@ urlpatterns = [
 
     # like
     url(r'^/likes$', views.likeUp),
-    url(r'^/likes/(?P<id>[0-9]+)$', views.likeDown),
-
-    # image viewer
-    url(r'^/image/(?P<img>.*)$', views.imageViewer)
+    url(r'^/likes/(?P<id>[0-9]+)$', views.likeDown)
 ]

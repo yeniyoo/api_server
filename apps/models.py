@@ -11,7 +11,7 @@ class Nickname(models.Model):
 
 
 class BackgroundImage(models.Model):
-    image = models.CharField(max_length=300)  # image name
+    image = models.CharField(max_length=300)  # 이미지 path
     create_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
