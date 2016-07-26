@@ -1,7 +1,9 @@
+from django.conf import settings
+from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework import status
-from utils import createResponseData
+from utils import createResponseData, baseURL
+from apps.models import BackgroundImage
 
 
 """
@@ -43,12 +45,19 @@ def pick(request):
 
 @api_view(['GET'])
 def backgroundImage(request):
-    data = [
-        {"id": 1, "image": "이미지 URL"},
-        {"id": 2, "image": "이미지 URL"}
-    ]
-    if request.method == 'GET':  # 더미
-        return Response(createResponseData(0, "success", data))
+    if request.method == 'GET':
+        imgViewerURL = baseURL() + "image/"
+        bg_data = BackgroundImage.objects.filter(is_active=True).values('id', 'image')
+        for bg in bg_data:
+            bg['image'] = imgViewerURL + str(bg['image'])
+        return Response(createResponseData(0, "success", bg_data))
+
+
+@api_view(['GET'])
+def imageViewer(request, img):
+    img_path = settings.STATIC_ROOT + '\\images\\' + img
+    bgimg = open(img_path, 'rb')
+    return HttpResponse(bgimg.read(), content_type="image/jpg")
 
 
 """
