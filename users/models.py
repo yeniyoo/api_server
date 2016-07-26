@@ -5,12 +5,12 @@ from django.contrib.auth.models import (
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, nickname, password=None):
-        if not email:
-            raise ValueError('Users must have an email address')
+    def create_user(self, fb_id, nickname, password=None):
+        if not fb_id:
+            raise ValueError('Users must have an fb_id')
 
         user = self.model(
-            email=MyUserManager.normalize_email(email),
+            fb_id=MyUserManager.normalize_email(fb_id),
             nickname=nickname,
         )
 
@@ -18,8 +18,8 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, nickname, password):
-        u = self.create_user(email=email,
+    def create_superuser(self, fb_id, nickname, password):
+        u = self.create_user(fb_id=fb_id,
                              nickname=nickname,
                              password=password,
                              )
@@ -29,11 +29,16 @@ class MyUserManager(BaseUserManager):
 
 
 class MyUser(AbstractBaseUser,  PermissionsMixin):
+
+    # facebook id는 email일 수도 있고, phone number일 수도 있다.
     fb_id = models.CharField(
         verbose_name='fb_id',
         max_length=250,
         unique=True,
     )
+
+    # 혹시몰라서 남겨둔 field 이다.
+    # 원칙적으로 nickname은 어떤 round에 참여한 어떤 user마다 매겨진다.
     nickname = models.CharField(
         max_length=10,
         null=True,
