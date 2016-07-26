@@ -5,12 +5,12 @@ from django.contrib.auth.models import (
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, nickname, password=None):
-        if not email:
-            raise ValueError('Users must have an email address')
+    def create_user(self, fb_id, nickname, password=None):
+        if not fb_id:
+            raise ValueError('Users must have an fb_id')
 
         user = self.model(
-            email=MyUserManager.normalize_email(email),
+            fb_id=MyUserManager.normalize_email(fb_id),
             nickname=nickname,
         )
 
@@ -18,8 +18,8 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, nickname, password):
-        u = self.create_user(email=email,
+    def create_superuser(self, fb_id, nickname, password):
+        u = self.create_user(fb_id=fb_id,
                              nickname=nickname,
                              password=password,
                              )
