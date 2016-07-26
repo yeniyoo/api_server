@@ -46,7 +46,7 @@ def pick(request):
 @api_view(['GET'])
 def backgroundImage(request):
     if request.method == 'GET':
-        imgViewerURL = baseURL() + "image/"
+        imgViewerURL = baseURL() + "image/"  # 이미지 경로 만들기
         bg_data = BackgroundImage.objects.filter(is_active=True).values('id', 'image')
         for bg in bg_data:
             bg['image'] = imgViewerURL + str(bg['image'])
