@@ -1,5 +1,9 @@
 import requests
 
+# Base URL
+def baseURL():
+    return "http://localhost:8000/api/"
+
 
 # Create response data
 def createResponseData(code, msg, data):
