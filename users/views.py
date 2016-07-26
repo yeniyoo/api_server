@@ -37,9 +37,20 @@ def facebookAuth(request):
             )
 
 
-@api_view(['POST', 'PUT'])
+@api_view(['PUT'])
 def ageSetting(request):
-    if request.method == 'POST':  # 더미
-        return Response(createResponseData(0, "success", None))
     if request.method == 'PUT':  # 더미
         return Response(createResponseData(0, "success", None))
+
+
+"""
+* My Round
+"""
+@api_view(['GET'])
+def myOpenRound(request):
+    if request.method == 'GET':  # 더미
+        data = [
+            {"id": 1, "question": "불라불라", "create_date": "2017-07-25", "member": 130, "complete": 0},
+            {"id": 2, "question": "불라불라1234", "create_date": "2017-07-25", "member": 10, "complete": 2}
+        ]
+        return Response(createResponseData(0, "success", data))
