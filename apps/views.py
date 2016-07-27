@@ -57,6 +57,8 @@ def editRound(request, round_id):
 
 
 @api_view(['GET', 'POST'])
+@authentication_classes([TokenAuthentication, ])
+@permission_classes([IsAuthenticated, ])
 def pick(request):
     if request.method == 'GET':  # 더미
         data = [
