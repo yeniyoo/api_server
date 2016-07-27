@@ -3,7 +3,6 @@ from random import randint
 from django.conf import settings
 from django.http import HttpResponse
 from django.db import transaction
-from django.db.models import Max
 
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -75,12 +74,10 @@ def pick(request):
         serializer = PickSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user_id=request.user)
-            # RoundName에 저장되어있는 해당 Round의 닉네임 인덱스 중 최대값을 구해 다음 인덱스로 저장시킴
-            n_max = RoundNickname.objects.filter(round_id=request.data['round_id']).aggregate(Max('nickname_id'))
-            nickname_index = (0 if n_max['nickname_id__max'] is None else int(n_max['nickname_id__max'])) + 1
+            nickname_id = RoundNickname.objects.next_nickname_id(request.data['round_id'])
             RoundNickname.objects.create(user_id=request.user,
                                          round_id_id=request.data['round_id'],
-                                         nickname_id_id=nickname_index)
+                                         nickname_id_id=nickname_id)
             return Response(createResponseData(0, "success", None))
         else:
             return Response(createResponseData(1, "Invalid parameter", None),

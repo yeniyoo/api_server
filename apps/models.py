@@ -2,6 +2,7 @@ from random import randint
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Max
 
 
 # 닉네임 저장소
@@ -44,6 +45,14 @@ class Round(models.Model):
     objects = RoundManager()
 
 
+class RoundNicknameManager(models.Manager):
+    # RoundName에 저장되어있는 해당 Round의 닉네임 인덱스 중 최대값을 구해 다음 인덱스를 반환.
+    def next_nickname_id(self, round_id):
+        n_max = RoundNickname.objects.filter(round_id=round_id).aggregate(Max('nickname_id'))
+        current_nickname_index = 0 if n_max['nickname_id__max'] is None else int(n_max['nickname_id__max'])
+        return current_nickname_index + 1
+
+
 class RoundNickname(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
@@ -51,6 +60,8 @@ class RoundNickname(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     round_id = models.ForeignKey(Round)
     nickname_id = models.ForeignKey(Nickname)
+
+    objects = RoundNicknameManager()
 
     class Meta:
         unique_together = (('user_id', 'round_id'),
