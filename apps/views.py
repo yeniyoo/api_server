@@ -1,9 +1,15 @@
 from django.conf import settings
 from django.http import HttpResponse
-from rest_framework.response import Response
+
+from rest_framework import generics
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from utils import createResponseData, baseURL
-from apps.models import BackgroundImage
+from .models import BackgroundImage
+from .serializers import RoundSerializer
 
 
 """
@@ -119,3 +125,10 @@ def likeUp(request):
 def likeDown(request, id):
     if request.method == 'DELETE':  # 더미
         return Response(createResponseData(0, "success", None))
+
+
+class RoundCreate(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication,]
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = RoundSerializer

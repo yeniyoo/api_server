@@ -1,5 +1,5 @@
+from django.conf import settings
 from django.db import models
-from users.models import MyUser
 
 
 # 닉네임 저장소
@@ -26,7 +26,7 @@ class Round(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
     complete_date = models.DateTimeField(null=True, default=None)  # 종료일
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     background_id = models.ForeignKey(BackgroundImage)
 
     def __str__(self):
@@ -37,7 +37,7 @@ class RoundNickname(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     round_id = models.ForeignKey(Round)
     nickname_id = models.ForeignKey(Nickname)
 
@@ -53,7 +53,7 @@ class Pick(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     round_id = models.ForeignKey(Round)
 
     def __str__(self):
@@ -75,7 +75,7 @@ class Comment(models.Model):
 
 class CommentLike(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     comment_id = models.ForeignKey(Comment)
 
     class Meta:
