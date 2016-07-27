@@ -53,7 +53,8 @@ class RoundNickname(models.Model):
     nickname_id = models.ForeignKey(Nickname)
 
     class Meta:
-        unique_together = ('user_id', 'round_id')
+        unique_together = (('user_id', 'round_id'),
+                           ('round_id', 'nickname_id'))
 
     def __str__(self):
         return self.nickname_id.nickname
@@ -73,6 +74,9 @@ class Pick(models.Model):
     round_id = models.ForeignKey(Round)
 
     objects = PickManager()
+
+    class Meta:
+        unique_together = ('user_id', 'round_id')
 
     def __str__(self):
         return self.yes_no

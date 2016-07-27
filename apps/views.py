@@ -2,7 +2,10 @@ from random import randint
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.db import transaction
+from django.db.models import Max
 
+from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
@@ -13,9 +16,9 @@ from rest_framework.response import Response
 
 from utils import createResponseData, baseURL
 from .models import BackgroundImage
-from .models import Pick
+from .models import Pick, RoundNickname
 from .models import Round
-from .serializers import RoundSerializer
+from .serializers import RoundSerializer, PickSerializer
 
 
 """
@@ -59,6 +62,7 @@ def editRound(request, round_id):
 @api_view(['GET', 'POST'])
 @authentication_classes([TokenAuthentication, ])
 @permission_classes([IsAuthenticated, ])
+@transaction.atomic
 def pick(request):
     if request.method == 'GET':  # 더미
         data = [
@@ -66,8 +70,20 @@ def pick(request):
             {"id": 2, "question": "불라불라1234", "yes_no": 0, "create_date": "2017-07-25", "member": 10, "complete": 2}
         ]
         return Response(createResponseData(0, "success", data))
-    if request.method == 'POST':  # 더미
-        return Response(createResponseData(0, "success", None))
+    if request.method == 'POST':
+        serializer = PickSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user_id=request.user)
+            # RoundName에 저장되어있는 해당 Round의 닉네임 인덱스 중 최대값을 구해 다음 인덱스로 저장시킴
+            n_max = RoundNickname.objects.filter(round_id=request.data['round_id']).aggregate(Max('nickname_id'))
+            nickname_index = (0 if n_max['nickname_id__max'] is None else int(n_max['nickname_id__max'])) + 1
+            RoundNickname.objects.create(user_id=request.user,
+                                         round_id_id=request.data['round_id'],
+                                         nickname_id_id=nickname_index)
+            return Response(createResponseData(0, "success", None))
+        else:
+            return Response(createResponseData(1, "Invalid parameter", None),
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
