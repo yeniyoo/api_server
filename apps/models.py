@@ -29,9 +29,6 @@ class Round(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     background_id = models.ForeignKey(BackgroundImage)
 
-    def __str__(self):
-        return self.id
-
 
 class RoundNickname(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
