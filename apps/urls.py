@@ -3,8 +3,7 @@ from apps import views
 
 urlpatterns = [
     # round
-    # url(r'^/rounds$', views.round),
-    url(r'^/rounds$', views.RoundCreate.as_view()),
+    url(r'^/rounds$', views.round),
     url(r'^/rounds/(?P<round_id>[0-9]+)$', views.editRound),
     url(r'^/picks$', views.pick),
     url(r'^/background-image$', views.backgroundImage),
