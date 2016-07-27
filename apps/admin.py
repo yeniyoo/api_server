@@ -9,6 +9,7 @@ class BackgroundImageAdmin(admin.ModelAdmin):
     list_display = ["id", "image", ]
     list_display_links = ["id", ]
 
+
 class RoundAdmin(admin.ModelAdmin):
     list_display = ["id", "question", ]
     list_display_links = ["question", ]

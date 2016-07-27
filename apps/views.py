@@ -1,7 +1,9 @@
+from random import randint
+
 from django.conf import settings
 from django.http import HttpResponse
 
-from rest_framework import generics
+from rest_framework.generics import CreateAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.decorators import authentication_classes
@@ -11,6 +13,8 @@ from rest_framework.response import Response
 
 from utils import createResponseData, baseURL
 from .models import BackgroundImage
+from .models import Pick
+from .models import Round
 from .serializers import RoundSerializer
 
 
@@ -21,20 +25,25 @@ from .serializers import RoundSerializer
 @authentication_classes([TokenAuthentication, ])
 @permission_classes([IsAuthenticated, ])
 def round(request):
+
     # GET method와 POST method 에서 처리하는 로직이 상이하다.
     # POST method에서 처리하는 로직은, DRF가 제공하는 CreateAPIView를 잘 활용할 수 있다.
     # GET method는 FBV로 직접 구현해야 할 것이다.
     # 상이한 로직이 하나의 URI에 묶여있으므로 분기해야한다.
     # view에서 다른 view들을 감싸는 방법에 대해서는 스택오버플로우 링크를 참고함
     # http://stackoverflow.com/questions/14956678/django-call-class-based-view-from-another-class-based-view
+
     if request.method == 'GET':  # 더미
+        random_round = Round.objects.get_random()
+        member = Pick.objects.get_member(random_round)
         data = {
-            "id": 1,
-            "question": "불라불라",
-            "create_date": "2016-07-24",
-            "member": 130
+            "id": random_round.id,
+            "question": random_round.question,
+            "create_date": random_round.create_date,
+            "member": member,
         }
-        return Response(createResponseData(0, "success", data))
+        # return Response(createResponseData(0, "success", data))
+        return Response(data)
     if request.method == 'POST':
         return RoundCreate.as_view()(request)
 
@@ -137,5 +146,5 @@ def likeDown(request, id):
         return Response(createResponseData(0, "success", None))
 
 
-class RoundCreate(generics.CreateAPIView):
+class RoundCreate(CreateAPIView):
     serializer_class = RoundSerializer

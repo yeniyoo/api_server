@@ -6,7 +6,7 @@ from .models import Round
 class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
-        fields = ('question', 'background_id',)
+        fields = ("question", "background_id", )
 
     # user_id field를 서버에서 채워줘야하므로 ModelSerializer의 create 메소드를 오버라이딩
     def create(self, validated_data):
