@@ -1,5 +1,7 @@
+from random import randint
+
+from django.conf import settings
 from django.db import models
-from users.models import MyUser
 
 
 # 닉네임 저장소
@@ -19,6 +21,16 @@ class BackgroundImage(models.Model):
         return self.image
 
 
+class RoundManager(models.Manager):
+    # Round 테이블에서 임의의 레코드를 하나 반환
+    # queryset이 아니라 Round 인스턴스 자체를 반환함에 유의
+    def get_random(self):
+        count = self.get_queryset().count()
+        index = randint(0, count-1)
+        random_obj = self.get_queryset().all()[index]
+        return random_obj
+
+
 class Round(models.Model):
     question = models.CharField(max_length=1000)  # 질문
     complete = models.BooleanField(default=False)
@@ -26,18 +38,17 @@ class Round(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
     complete_date = models.DateTimeField(null=True, default=None)  # 종료일
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     background_id = models.ForeignKey(BackgroundImage)
 
-    def __str__(self):
-        return self.id
+    objects = RoundManager()
 
 
 class RoundNickname(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     round_id = models.ForeignKey(Round)
     nickname_id = models.ForeignKey(Nickname)
 
@@ -48,13 +59,20 @@ class RoundNickname(models.Model):
         return self.nickname_id.nickname
 
 
+class PickManager(models.Manager):
+    def get_member(self, round_id):
+        return self.get_queryset().filter(round_id=round_id).count()
+
+
 class Pick(models.Model):
     yes_no = models.BooleanField(default=True)
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     round_id = models.ForeignKey(Round)
+
+    objects = PickManager()
 
     def __str__(self):
         return self.yes_no
@@ -75,7 +93,7 @@ class Comment(models.Model):
 
 class CommentLike(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
-    user_id = models.ForeignKey(MyUser)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     comment_id = models.ForeignKey(Comment)
 
     class Meta:
