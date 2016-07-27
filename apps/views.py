@@ -65,11 +65,12 @@ def editRound(request, round_id):
 @transaction.atomic
 def pick(request):
     if request.method == 'GET':  # 더미
-        data = [
-            {"id": 1, "question": "불라불라", "yes_no": 1, "create_date": "2017-07-25", "member": 130, "complete": 0},
-            {"id": 2, "question": "불라불라1234", "yes_no": 0, "create_date": "2017-07-25", "member": 10, "complete": 2}
-        ]
-        return Response(createResponseData(0, "success", data))
+        picks_round = Round.objects.filter(pick__user_id=request.user) \
+            .values('id', 'question', 'create_date', 'pick__yes_no', 'complete')
+        for round in picks_round:
+            round['member'] = Pick.objects.get_member(round['id'])
+            round['yes_no'] = int(round.pop('pick__yes_no'))
+        return Response(createResponseData(0, "success", picks_round))
     if request.method == 'POST':
         serializer = PickSerializer(data=request.data)
         if serializer.is_valid():
