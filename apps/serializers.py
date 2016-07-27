@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Round
+from .models import Round, Pick
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -20,3 +20,11 @@ class RoundSerializer(serializers.ModelSerializer):
         round.user_id = user
         round.save()
         return round
+
+
+class PickSerializer(serializers.ModelSerializer):
+    yes_no = serializers.NullBooleanField(required=True)
+
+    class Meta:
+        model = Pick
+        fields = ("yes_no", "round_id", )

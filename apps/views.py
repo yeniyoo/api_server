@@ -2,7 +2,9 @@ from random import randint
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.db import transaction
 
+from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
@@ -13,9 +15,9 @@ from rest_framework.response import Response
 
 from utils import createResponseData, baseURL
 from .models import BackgroundImage
-from .models import Pick
+from .models import Pick, RoundNickname
 from .models import Round
-from .serializers import RoundSerializer
+from .serializers import RoundSerializer, PickSerializer
 
 
 """
@@ -57,15 +59,29 @@ def editRound(request, round_id):
 
 
 @api_view(['GET', 'POST'])
+@authentication_classes([TokenAuthentication, ])
+@permission_classes([IsAuthenticated, ])
+@transaction.atomic
 def pick(request):
     if request.method == 'GET':  # 더미
-        data = [
-            {"id": 1, "question": "불라불라", "yes_no": 1, "create_date": "2017-07-25", "member": 130, "complete": 0},
-            {"id": 2, "question": "불라불라1234", "yes_no": 0, "create_date": "2017-07-25", "member": 10, "complete": 2}
-        ]
-        return Response(createResponseData(0, "success", data))
-    if request.method == 'POST':  # 더미
-        return Response(createResponseData(0, "success", None))
+        picks_round = Round.objects.filter(pick__user_id=request.user) \
+            .values('id', 'question', 'create_date', 'pick__yes_no', 'complete')
+        for round in picks_round:
+            round['member'] = Pick.objects.get_member(round['id'])
+            round['yes_no'] = int(round.pop('pick__yes_no'))
+        return Response(createResponseData(0, "success", picks_round))
+    if request.method == 'POST':
+        serializer = PickSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user_id=request.user)
+            nickname_id = RoundNickname.objects.next_nickname_id(request.data['round_id'])
+            RoundNickname.objects.create(user_id=request.user,
+                                         round_id_id=request.data['round_id'],
+                                         nickname_id_id=nickname_id)
+            return Response(createResponseData(0, "success", None))
+        else:
+            return Response(createResponseData(1, "Invalid parameter", None),
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
