@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'^/background-image$', views.backgroundImage),
 
     # comment
-    url(r'^/rounds/(?P<round_id>[0-9]+)/comments$', views.comment),
+    url(r'^/rounds/(?P<round_id>[0-9]+)/comments$', views.CommentCreate.as_view()),
     url(r'^/comments/(?P<comment_id>[0-9]+)$', views.editComment),
 
     # recomment

@@ -18,6 +18,7 @@ from utils import createResponseData, baseURL
 from .models import BackgroundImage
 from .models import Pick, RoundNickname
 from .models import Round
+from .serializers import CommentSerializer
 from .serializers import MyRoundSerializer
 from .serializers import PickSerializer
 from .serializers import RoundSerializer
@@ -178,3 +179,10 @@ class MyRoundList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Round.objects.filter(user_id=user.id)
+
+
+class CommentCreate(CreateAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = CommentSerializer

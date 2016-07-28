@@ -46,6 +46,9 @@ class Round(models.Model):
 
     objects = RoundManager()
 
+    def __str__(self):
+        return str(self.id)
+
     # 해당 Round를 Pick한 User의 숫자를 반환
     def get_member(self):
         return self.pick_set.count()
