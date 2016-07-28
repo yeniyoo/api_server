@@ -170,5 +170,12 @@ class RoundCreate(CreateAPIView):
 
 
 class MyRoundList(ListAPIView):
-    queryset = Round.objects.all()
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
     serializer_class = MyRoundSerializer
+
+    # 자신이 생성한 라운드들만 받아오도록 get_queryset 메소드를 오버라이딩
+    def get_queryset(self):
+        user = self.request.user
+        return Round.objects.filter(user_id=user.id)
