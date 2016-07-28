@@ -99,7 +99,13 @@ class RecommentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         comment = Comment(**validated_data)
         comment_id = int(self.context.get("view").kwargs["comment_id"])
-        pick_id = Comment.objects.get(id=comment_id).pick_id
+
+        # 1) Comment에서 해당 댓글의 pick_id를 얻은 후, Pick에서 round_id를 구함.
+        # 2) user_id와 round_id를 통해서 대댓글을 남기는 사람의 pick_id 정보를 이용
+        comment_pick_id = Comment.objects.get(id=comment_id).pick_id_id
+        round_id = Pick.objects.get(id=comment_pick_id).round_id
+        user_id = self.context.get("request").user.id
+        pick_id = Pick.objects.get(user_id=user_id, round_id=round_id)
 
         comment.pick_id = pick_id
         comment.comment_id_id = comment_id
