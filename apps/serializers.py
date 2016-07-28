@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework import serializers
 
 from .models import Pick
@@ -42,9 +44,22 @@ class PickSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+
+    # http://www.django-rest-framework.org/api-guide/fields/#serializermethodfield 참고
+    # read_only field
+    is_liked = serializers.SerializerMethodField(method_name="like_or_not")
+
     class Meta:
         model = Comment
-        fields = ("content", )
+        fields = ("content", "is_liked", )
+
+    def like_or_not(self, obj):
+        user_id = self.context.get("request").user.id
+        try:
+            obj.commentlike_set.get(user_id=user_id)
+            return True
+        except ObjectDoesNotExist:
+            return False
 
     # Pick하지 않은 유저가 요청했을 경우에는 어떻게 처리하면 좋을까?
     # 1) get_object_or_404 메소드를 사용해서 404 Response를 발생
