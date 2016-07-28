@@ -94,7 +94,7 @@ class Pick(models.Model):
         unique_together = ('user_id', 'round_id')
 
     def __str__(self):
-        return str(self.yes_no)
+        return str(self.id)
 
 
 class Comment(models.Model):
@@ -107,7 +107,7 @@ class Comment(models.Model):
     comment_id = models.ForeignKey("self", null=True, default=None)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class CommentLike(models.Model):
