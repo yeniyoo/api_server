@@ -46,6 +46,10 @@ class Round(models.Model):
 
     objects = RoundManager()
 
+    # 해당 Round를 Pick한 User의 숫자를 반환
+    def get_member(self):
+        return self.pick_set.count()
+
 
 class RoundNicknameManager(models.Manager):
     # RoundName에 저장되어있는 해당 Round의 닉네임 인덱스 중 최대값을 구해 다음 인덱스를 반환.
@@ -73,20 +77,15 @@ class RoundNickname(models.Model):
         return self.nickname_id.nickname
 
 
-class PickManager(models.Manager):
-    def get_member(self, round_id):
-        return self.get_queryset().filter(round_id=round_id).count()
-
-
 class Pick(models.Model):
     yes_no = models.BooleanField(default=True)
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    # MyUser, Round 레코드가 삭제될 경우 Pick 레코드도 삭제되어야 한다
+    # 그러니 on_delete = models.CASCADE 옵션을 추가해줘야 할 것
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
     round_id = models.ForeignKey(Round)
-
-    objects = PickManager()
 
     class Meta:
         unique_together = ('user_id', 'round_id')

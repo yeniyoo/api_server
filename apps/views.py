@@ -40,12 +40,11 @@ def round(request):
 
     if request.method == 'GET':  # 더미
         random_round = Round.objects.get_random()
-        member = Pick.objects.get_member(random_round)
         data = {
             "id": random_round.id,
             "question": random_round.question,
             "create_date": random_round.create_date,
-            "member": member,
+            "member": random_round.get_member()
         }
         # return Response(createResponseData(0, "success", data))
         return Response(data)

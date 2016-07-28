@@ -22,10 +22,11 @@ class RoundSerializer(serializers.ModelSerializer):
         return round
 
 
+# GET method 사용만 고려해서 설계
 class MyRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
-        fields = ("question", "create_date", "complete", )
+        fields = ("id", "question", "create_date", "complete", )
 
 
 class PickSerializer(serializers.ModelSerializer):
