@@ -71,7 +71,7 @@ class CommentSerializer(serializers.ModelSerializer):
         # Generic View가 Serializer를 사용할때, context를 채워준다.
         # 필요한 정보들을 얻을 수 있다.
         # http://stackoverflow.com/questions/14921552/rest-framework-serializer-method
-        user_id= self.context.get("request").user.id
+        user_id = self.context.get("request").user.id
         round_id = int(self.context.get("view").kwargs["round_id"])
         pick_id = Pick.objects.get(user_id=user_id, round_id=round_id)
 
@@ -79,3 +79,29 @@ class CommentSerializer(serializers.ModelSerializer):
         comment.save()
         return comment
 
+
+class RecommentSerializer(serializers.ModelSerializer):
+    is_liked = serializers.SerializerMethodField(method_name="like_or_not")
+
+    class Meta:
+        model = Comment
+        fields = ("id", "content", "like", "is_liked", "create_date", "comment_id")
+        read_only_fields = ("id", "like", "is_liked", "create_date", )
+
+    def like_or_not(self, obj):
+        user_id = self.context.get("request").user.id
+        try:
+            obj.commentlike_set.get(user_id=user_id)
+            return True
+        except ObjectDoesNotExist:
+            return False
+
+    def create(self, validated_data):
+        comment = Comment(**validated_data)
+        comment_id = int(self.context.get("view").kwargs["comment_id"])
+        pick_id = Comment.objects.get(id=comment_id).pick_id
+
+        comment.pick_id = pick_id
+        comment.comment_id_id = comment_id
+        comment.save()
+        return comment

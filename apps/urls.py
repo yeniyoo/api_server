@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^/comments/(?P<comment_id>[0-9]+)$', views.editComment),
 
     # recomment
-    url(r'^/comments/(?P<comment_id>[0-9]+)/recomments$', views.recomment),
+    url(r'^/comments/(?P<comment_id>[0-9]+)/recomments$', views.RecommentListCreate.as_view()),
     url(r'^/recomments/(?P<recomment_id>[0-9]+)$', views.editRecomment),
 
     # like

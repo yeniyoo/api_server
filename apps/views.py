@@ -20,7 +20,7 @@ from .models import BackgroundImage
 from .models import Comment
 from .models import Pick, RoundNickname
 from .models import Round
-from .serializers import CommentSerializer
+from .serializers import CommentSerializer, RecommentSerializer
 from .serializers import MyRoundSerializer
 from .serializers import PickSerializer
 from .serializers import RoundSerializer
@@ -131,18 +131,6 @@ class CommentListCreate(ListCreateAPIView):
         return Comment.objects.filter(pick_id__round_id=self.kwargs["round_id"])
 
 
-@api_view(['GET', 'POST'])
-def comment(request, round_id):
-    if request.method == 'GET':  # 더미
-        data = [
-            {"id": 1, "content": "댓글어쩌구저쩌구", "create_date": "2016-07-25", "like": 100, "is_liked": True},
-            {"id": 2, "content": "댓글어쩌구", "create_date": "2016-07-24", "like": 50, "is_liked": False}
-        ]
-        return Response(createResponseData(0, "success", data))
-    if request.method == 'POST':  # 더미
-        return Response(createResponseData(0, "success", None))
-
-
 @api_view(['PUT', 'DELETE'])
 def editComment(request, comment_id):
     if request.method == 'PUT':  # 더미
@@ -154,16 +142,14 @@ def editComment(request, comment_id):
 """
 * Recomment
 """
-@api_view(['GET', 'POST'])
-def recomment(request, comment_id):
-    if request.method == 'GET':  # 더미
-        data = [
-            {"id": 3, "content": "대댓글어쩌구저쩌구", "create_date": "2016-07-25", "like": 100, "is_liked": True, "comment_id": 1},
-            {"id": 4, "content": "대댓글어쩌구", "create_date": "2016-07-24", "like": 50, "is_liked": False, "comment_id":1}
-        ]
-        return Response(createResponseData(0, "success", data))
-    if request.method == 'POST':  # 더미
-        return Response(createResponseData(0, "success", None))
+class RecommentListCreate(ListCreateAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = RecommentSerializer
+
+    def get_queryset(self):
+        return Comment.objects.filter(comment_id=self.kwargs["comment_id"])
 
 
 @api_view(['PUT', 'DELETE'])
