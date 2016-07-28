@@ -66,12 +66,17 @@ def editRound(request, round_id):
 @transaction.atomic
 def pick(request):
     if request.method == 'GET':  # 더미
-        picks_round = Round.objects.filter(pick__user_id=request.user) \
-            .values('id', 'question', 'create_date', 'pick__yes_no', 'complete')
-        for round in picks_round:
-            round['member'] = Pick.objects.get_member(round['id'])
-            round['yes_no'] = int(round.pop('pick__yes_no'))
-        return Response(createResponseData(0, "success", picks_round))
+        picks_round = Pick.objects.filter(user_id=request.user)
+        picks_round_list = []
+        for cnt, pick in enumerate(picks_round):
+            picks_round_list.append({})
+            picks_round_list[cnt]['id'] = pick.round_id.id
+            picks_round_list[cnt]['question'] = pick.round_id.question
+            picks_round_list[cnt]['yes_no'] = int(pick.yes_no)
+            picks_round_list[cnt]['create_date'] = pick.round_id.create_date
+            picks_round_list[cnt]['member'] = pick.round_id.get_member()
+            picks_round_list[cnt]['complete'] = pick.round_id.complete
+        return Response(picks_round_list)
     if request.method == 'POST':
         serializer = PickSerializer(data=request.data)
         if serializer.is_valid():
@@ -80,10 +85,9 @@ def pick(request):
             RoundNickname.objects.create(user_id=request.user,
                                          round_id_id=request.data['round_id'],
                                          nickname_id_id=nickname_id)
-            return Response(createResponseData(0, "success", None))
+            return Response()
         else:
-            return Response(createResponseData(1, "Invalid parameter", None),
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -93,7 +97,7 @@ def backgroundImage(request):
         bg_data = BackgroundImage.objects.filter(is_active=True).values('id', 'image')
         for bg in bg_data:
             bg['image'] = imgViewerURL + str(bg['image'])
-        return Response(createResponseData(0, "success", bg_data))
+        return Response(bg_data)
 
 
 @api_view(['GET'])

@@ -37,7 +37,7 @@ def facebookAuth(request):
             token = Token.objects.get_or_create(user=user[0])
             Token.objects.filter(key=token[0]).delete()  # 토큰이 새로 생성되던 기존에 존재하던 한번 지우고
             token = Token.objects.create(user=user[0])  # 새로운 토큰을 부여함. (로그인 할때마다 재생성)
-            return Response(createResponseData(0, "success", None), headers={"auth-token": str('Token ' + str(token))})
+            return Response(headers={"auth-token": str('Token ' + str(token))})
         else:
             return Response(
                 createResponseData(1, "incorrect access_token", None),
@@ -57,7 +57,7 @@ def ageSetting(request):
                             status=status.HTTP_400_BAD_REQUEST)
         # age setting
         MyUser.objects.filter(fb_id=request.user).update(age=age)
-        return Response(createResponseData(0, "success", None))
+        return Response()
 
 
 """
