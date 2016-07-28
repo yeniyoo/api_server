@@ -45,10 +45,10 @@ def round(request):
         random_round = Round.objects.get_random()
         data = [
             {
-            "id": random_round.id,
-            "question": random_round.question,
-            "create_date": random_round.create_date,
-            "member": random_round.get_member()
+                "id": random_round.id,
+                "question": random_round.question,
+                "create_date": random_round.create_date,
+                "member": random_round.get_member()
             }
         ]
         # return Response(createResponseData(0, "success", data))
@@ -149,7 +149,7 @@ class RecommentListCreate(ListCreateAPIView):
     serializer_class = RecommentSerializer
 
     def get_queryset(self):
-        return Comment.objects.filter(comment_id=self.kwargs["comment_id"])
+        return Comment.objects.filter(comment_id=self.kwargs["comment_id"], is_active=1)
 
 
 @api_view(['PUT', 'DELETE'])
