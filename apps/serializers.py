@@ -51,7 +51,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ("content", "is_liked", )
+        fields = ("id", "content", "like", "is_liked", "create_date", )
+        read_only_fields = ("id", "like", "is_liked", "create_date", )
 
     def like_or_not(self, obj):
         user_id = self.context.get("request").user.id

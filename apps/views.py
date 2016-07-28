@@ -7,6 +7,7 @@ from django.db import transaction
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.decorators import authentication_classes
@@ -16,6 +17,7 @@ from rest_framework.response import Response
 
 from utils import createResponseData, baseURL
 from .models import BackgroundImage
+from .models import Comment
 from .models import Pick, RoundNickname
 from .models import Round
 from .serializers import CommentSerializer
@@ -39,14 +41,16 @@ def round(request):
     # view에서 다른 view들을 감싸는 방법에 대해서는 스택오버플로우 링크를 참고함
     # http://stackoverflow.com/questions/14956678/django-call-class-based-view-from-another-class-based-view
 
-    if request.method == 'GET':  # 더미
+    if request.method == 'GET':
         random_round = Round.objects.get_random()
-        data = {
+        data = [
+            {
             "id": random_round.id,
             "question": random_round.question,
             "create_date": random_round.create_date,
             "member": random_round.get_member()
-        }
+            }
+        ]
         # return Response(createResponseData(0, "success", data))
         return Response(data)
     if request.method == 'POST':
@@ -181,8 +185,13 @@ class MyRoundList(ListAPIView):
         return Round.objects.filter(user_id=user.id)
 
 
-class CommentCreate(CreateAPIView):
+class CommentListCreate(ListCreateAPIView):
     authentication_classes = (TokenAuthentication, )
     permission_classes = (IsAuthenticated, )
 
     serializer_class = CommentSerializer
+
+    # Comment의 목록을 필터링해줄 queryset을 반환하는 get_queryset을 오버라이딩.
+    # URI에서 round_id 값을 뽑아서, 해당 Round에 달린 comment 정보만 반환한다.
+    def get_queryset(self):
+        return Comment.objects.filter(pick_id__round_id=self.kwargs["round_id"])

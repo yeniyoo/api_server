@@ -109,6 +109,11 @@ class Comment(models.Model):
     def __str__(self):
         return str(self.id)
 
+    def get_user_id(self):
+        return str(self.pick_id.user_id)
+
+    def get_round_id(self):
+        return str(self.pick_id.round_id)
 
 class CommentLike(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
