@@ -46,6 +46,9 @@ class Round(models.Model):
 
     objects = RoundManager()
 
+    def __str__(self):
+        return str(self.id)
+
     # 해당 Round를 Pick한 User의 숫자를 반환
     def get_member(self):
         return self.pick_set.count()
@@ -91,7 +94,7 @@ class Pick(models.Model):
         unique_together = ('user_id', 'round_id')
 
     def __str__(self):
-        return str(self.yes_no)
+        return str(self.id)
 
 
 class Comment(models.Model):
@@ -104,8 +107,13 @@ class Comment(models.Model):
     comment_id = models.ForeignKey("self", null=True, default=None)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
+    def get_user_id(self):
+        return str(self.pick_id.user_id)
+
+    def get_round_id(self):
+        return str(self.pick_id.round_id)
 
 class CommentLike(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
