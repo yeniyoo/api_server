@@ -91,7 +91,7 @@ class Pick(models.Model):
         unique_together = ('user_id', 'round_id')
 
     def __str__(self):
-        return self.yes_no
+        return str(self.yes_no)
 
 
 class Comment(models.Model):

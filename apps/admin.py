@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import BackgroundImage
+from .models import Pick
 from .models import Round
 
 
@@ -17,3 +18,4 @@ class RoundAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(BackgroundImage, BackgroundImageAdmin)
 admin.site.register(Round, RoundAdmin)
+admin.site.register(Pick)
