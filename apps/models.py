@@ -26,9 +26,11 @@ class RoundManager(models.Manager):
     # Round 테이블에서 임의의 레코드를 하나 반환
     # queryset이 아니라 Round 인스턴스 자체를 반환함에 유의
     def get_random(self):
-        count = self.get_queryset().count()
+        candidate = self.get_queryset().filter(is_active=True, complete=False)
+        count = candidate.count()
+        # count = 0으로 유효한 라운드가 존재하지 않을 경우의 에러처리가 필요함
         index = randint(0, count-1)
-        random_obj = self.get_queryset().all()[index]
+        random_obj = candidate[index]
         return random_obj
 
 
