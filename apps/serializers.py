@@ -22,6 +22,15 @@ class RoundSerializer(serializers.ModelSerializer):
         return round
 
 
+# GET method 사용만 고려해서 설계
+class MyRoundSerializer(serializers.ModelSerializer):
+    member = serializers.IntegerField(source="get_member")
+
+    class Meta:
+        model = Round
+        fields = ("id", "question", "create_date", "complete", "member", )
+
+
 class PickSerializer(serializers.ModelSerializer):
     yes_no = serializers.NullBooleanField(required=True)
 

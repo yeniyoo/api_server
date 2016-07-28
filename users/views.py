@@ -4,9 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-from utils import createResponseData, fbGraphApi
+
 from users.serializers import UserSerializers
 from users.models import MyUser
+from utils import createResponseData, fbGraphApi
 
 
 @api_view(['POST'])

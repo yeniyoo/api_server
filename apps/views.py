@@ -6,6 +6,7 @@ from django.db import transaction
 
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.decorators import authentication_classes
@@ -17,7 +18,9 @@ from utils import createResponseData, baseURL
 from .models import BackgroundImage
 from .models import Pick, RoundNickname
 from .models import Round
-from .serializers import RoundSerializer, PickSerializer
+from .serializers import MyRoundSerializer
+from .serializers import PickSerializer
+from .serializers import RoundSerializer
 
 
 """
@@ -37,12 +40,11 @@ def round(request):
 
     if request.method == 'GET':  # 더미
         random_round = Round.objects.get_random()
-        member = Pick.objects.get_member(random_round)
         data = {
             "id": random_round.id,
             "question": random_round.question,
             "create_date": random_round.create_date,
-            "member": member,
+            "member": random_round.get_member()
         }
         # return Response(createResponseData(0, "success", data))
         return Response(data)
@@ -164,3 +166,15 @@ def likeDown(request, id):
 
 class RoundCreate(CreateAPIView):
     serializer_class = RoundSerializer
+
+
+class MyRoundList(ListAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = MyRoundSerializer
+
+    # 자신이 생성한 라운드들만 받아오도록 get_queryset 메소드를 오버라이딩
+    def get_queryset(self):
+        user = self.request.user
+        return Round.objects.filter(user_id=user.id)
