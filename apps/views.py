@@ -57,6 +57,10 @@ def round(request):
         return RoundCreate.as_view()(request)
 
 
+class RoundCreate(CreateAPIView):
+    serializer_class = RoundSerializer
+
+
 @api_view(['PUT', 'DELETE'])
 def editRound(request, round_id):
     if request.method == 'PUT':  # 더미
@@ -115,6 +119,18 @@ def imageViewer(request, img):
 """
 * Comment
 """
+class CommentListCreate(ListCreateAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = CommentSerializer
+
+    # Comment의 목록을 필터링해줄 queryset을 반환하는 get_queryset을 오버라이딩.
+    # URI에서 round_id 값을 뽑아서, 해당 Round에 달린 comment 정보만 반환한다.
+    def get_queryset(self):
+        return Comment.objects.filter(pick_id__round_id=self.kwargs["round_id"])
+
+
 @api_view(['GET', 'POST'])
 def comment(request, round_id):
     if request.method == 'GET':  # 더미
@@ -173,10 +189,9 @@ def likeDown(request, id):
         return Response(createResponseData(0, "success", None))
 
 
-class RoundCreate(CreateAPIView):
-    serializer_class = RoundSerializer
-
-
+"""
+* My Round
+"""
 class MyRoundList(ListAPIView):
     authentication_classes = (TokenAuthentication, )
     permission_classes = (IsAuthenticated, )
@@ -187,15 +202,3 @@ class MyRoundList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Round.objects.filter(user_id=user.id)
-
-
-class CommentListCreate(ListCreateAPIView):
-    authentication_classes = (TokenAuthentication, )
-    permission_classes = (IsAuthenticated, )
-
-    serializer_class = CommentSerializer
-
-    # Comment의 목록을 필터링해줄 queryset을 반환하는 get_queryset을 오버라이딩.
-    # URI에서 round_id 값을 뽑아서, 해당 Round에 달린 comment 정보만 반환한다.
-    def get_queryset(self):
-        return Comment.objects.filter(pick_id__round_id=self.kwargs["round_id"])
