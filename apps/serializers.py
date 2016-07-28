@@ -22,6 +22,12 @@ class RoundSerializer(serializers.ModelSerializer):
         return round
 
 
+class MyRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ("question", "create_date", "complete", )
+
+
 class PickSerializer(serializers.ModelSerializer):
     yes_no = serializers.NullBooleanField(required=True)
 

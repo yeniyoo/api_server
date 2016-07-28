@@ -6,6 +6,7 @@ from django.db import transaction
 
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.decorators import authentication_classes
@@ -17,7 +18,9 @@ from utils import createResponseData, baseURL
 from .models import BackgroundImage
 from .models import Pick, RoundNickname
 from .models import Round
-from .serializers import RoundSerializer, PickSerializer
+from .serializers import MyRoundSerializer
+from .serializers import PickSerializer
+from .serializers import RoundSerializer
 
 
 """
@@ -164,3 +167,8 @@ def likeDown(request, id):
 
 class RoundCreate(CreateAPIView):
     serializer_class = RoundSerializer
+
+
+class MyRoundList(ListAPIView):
+    queryset = Round.objects.all()
+    serializer_class = MyRoundSerializer
