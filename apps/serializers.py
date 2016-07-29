@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from .models import Pick
 from .models import Round
+from .models import RoundNickname
 from .models import Comment
 
 
@@ -48,10 +49,12 @@ class CommentSerializer(serializers.ModelSerializer):
     # http://www.django-rest-framework.org/api-guide/fields/#serializermethodfield 참고
     # read_only field
     is_liked = serializers.SerializerMethodField(method_name="like_or_not")
+    # method_name 값을 설정하지 않으면, default로 get_nickname을 호출
+    nickname = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ("id", "content", "like", "is_liked", "create_date", )
+        fields = ("id", "nickname", "content", "like", "is_liked", "create_date", )
         read_only_fields = ("id", "like", "is_liked", "create_date", )
 
     def like_or_not(self, obj):
@@ -61,6 +64,12 @@ class CommentSerializer(serializers.ModelSerializer):
             return True
         except ObjectDoesNotExist:
             return False
+
+    def get_nickname(self, obj):
+        # obj(Comment)의 정보를 가지고 대응되는 RoundNickname 인스턴스를 검색
+        pick_id = obj.pick_id
+        roundnickname = RoundNickname.objects.get(user_id=pick_id.user_id, round_id=pick_id.round_id)
+        return roundnickname.nickname_id.nickname
 
     # Pick하지 않은 유저가 요청했을 경우에는 어떻게 처리하면 좋을까?
     # 1) get_object_or_404 메소드를 사용해서 404 Response를 발생
@@ -73,6 +82,8 @@ class CommentSerializer(serializers.ModelSerializer):
         # http://stackoverflow.com/questions/14921552/rest-framework-serializer-method
         user_id = self.context.get("request").user.id
         round_id = int(self.context.get("view").kwargs["round_id"])
+        # Pick 레코드가 존재하지 않는 경우에 대한 에러 처리 필요함.
+        # get_object_or_404 메소드를 사용하는 방법이 하나 있겠음.
         pick_id = Pick.objects.get(user_id=user_id, round_id=round_id)
 
         comment.pick_id = pick_id

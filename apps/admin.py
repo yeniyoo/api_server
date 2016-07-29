@@ -4,6 +4,7 @@ from .models import BackgroundImage
 from .models import Comment
 from .models import Pick
 from .models import Round
+from .models import RoundNickname
 
 
 # Define ModelAdmins
@@ -24,5 +25,6 @@ class RoundAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(BackgroundImage, BackgroundImageAdmin)
 admin.site.register(Comment, CommentAdmin)
-admin.site.register(Round, RoundAdmin)
 admin.site.register(Pick)
+admin.site.register(Round, RoundAdmin)
+admin.site.register(RoundNickname)

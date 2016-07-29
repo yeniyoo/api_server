@@ -115,6 +115,7 @@ class Comment(models.Model):
     def get_round_id(self):
         return str(self.pick_id.round_id)
 
+
 class CommentLike(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
