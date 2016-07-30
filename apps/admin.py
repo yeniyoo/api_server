@@ -18,6 +18,10 @@ class CommentAdmin(admin.ModelAdmin):
     list_display_links = ["content", ]
 
 
+class PickAdmin(admin.ModelAdmin):
+    list_display = ["id", "get_username", "round_id"]
+
+
 class RoundAdmin(admin.ModelAdmin):
     list_display = ["id", "question", ]
     list_display_links = ["question", ]
@@ -25,6 +29,6 @@ class RoundAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(BackgroundImage, BackgroundImageAdmin)
 admin.site.register(Comment, CommentAdmin)
-admin.site.register(Pick)
+admin.site.register(Pick, PickAdmin)
 admin.site.register(Round, RoundAdmin)
 admin.site.register(RoundNickname)

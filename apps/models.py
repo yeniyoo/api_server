@@ -96,6 +96,9 @@ class Pick(models.Model):
     def __str__(self):
         return str(self.id)
 
+    def get_username(self):
+        return self.user_id.fb_id
+
 
 class Comment(models.Model):
     content = models.CharField(max_length=500)
