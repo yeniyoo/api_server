@@ -93,10 +93,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class RecommentSerializer(serializers.ModelSerializer):
     is_liked = serializers.SerializerMethodField(method_name="like_or_not")
+    nickname = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ("id", "content", "like", "is_liked", "create_date", "comment_id")
+        fields = ("id", "nickname", "content", "like", "is_liked", "create_date", "comment_id")
         read_only_fields = ("id", "like", "is_liked", "create_date", )
 
     def like_or_not(self, obj):
@@ -106,6 +107,12 @@ class RecommentSerializer(serializers.ModelSerializer):
             return True
         except ObjectDoesNotExist:
             return False
+
+    def get_nickname(self, obj):
+        # obj(Comment)의 정보를 가지고 대응되는 RoundNickname 인스턴스를 검색
+        pick_id = obj.pick_id
+        roundnickname = RoundNickname.objects.get(user_id=pick_id.user_id, round_id=pick_id.round_id)
+        return roundnickname.nickname_id.nickname
 
     def create(self, validated_data):
         comment = Comment(**validated_data)
