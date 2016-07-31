@@ -14,12 +14,12 @@ class BackgroundImageAdmin(admin.ModelAdmin):
 
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ["get_user_id", "get_round_id", "pick_id", "id", "content", ]
+    list_display = ["get_user", "get_round", "pick", "id", "content", ]
     list_display_links = ["content", ]
 
 
 class PickAdmin(admin.ModelAdmin):
-    list_display = ["id", "get_username", "round_id"]
+    list_display = ["id", "get_username", "round"]
 
 
 class RoundAdmin(admin.ModelAdmin):

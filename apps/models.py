@@ -41,7 +41,7 @@ class Round(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
     complete_date = models.DateTimeField(null=True, default=None)  # 종료일
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     background_id = models.ForeignKey(BackgroundImage)
 
     objects = RoundManager()
@@ -66,18 +66,18 @@ class RoundNickname(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
-    round_id = models.ForeignKey(Round)
-    nickname_id = models.ForeignKey(Nickname)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    round = models.ForeignKey(Round)
+    nickname = models.ForeignKey(Nickname)
 
     objects = RoundNicknameManager()
 
     class Meta:
-        unique_together = (('user_id', 'round_id'),
-                           ('round_id', 'nickname_id'))
+        unique_together = (('user', 'round'),
+                           ('round', 'nickname'))
 
     def __str__(self):
-        return self.nickname_id.nickname
+        return self.nickname.nickname
 
 
 class Pick(models.Model):
@@ -87,17 +87,17 @@ class Pick(models.Model):
     is_active = models.BooleanField(default=True)
     # MyUser, Round 레코드가 삭제될 경우 Pick 레코드도 삭제되어야 한다
     # 그러니 on_delete = models.CASCADE 옵션을 추가해줘야 할 것
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
-    round_id = models.ForeignKey(Round)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    round = models.ForeignKey(Round)
 
     class Meta:
-        unique_together = ('user_id', 'round_id')
+        unique_together = ('user', 'round')
 
     def __str__(self):
         return str(self.id)
 
     def get_username(self):
-        return self.user_id.fb_id
+        return self.user.fb_id
 
 
 class Comment(models.Model):
@@ -106,26 +106,26 @@ class Comment(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    pick_id = models.ForeignKey(Pick)
-    comment_id = models.ForeignKey("self", null=True, default=None)
+    pick = models.ForeignKey(Pick)
+    parent = models.ForeignKey("self", null=True, default=None)
 
     def __str__(self):
         return str(self.id)
 
-    def get_user_id(self):
-        return str(self.pick_id.user_id)
+    def get_user(self):
+        return str(self.pick.user)
 
-    def get_round_id(self):
-        return str(self.pick_id.round_id)
+    def get_round(self):
+        return str(self.pick.round)
 
 
 class CommentLike(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL)
-    comment_id = models.ForeignKey(Comment)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    comment = models.ForeignKey(Comment)
 
     class Meta:
-        unique_together = ('user_id', 'comment_id')
+        unique_together = ('user', 'comment')
 
     def __str__(self):
-        return self.user_id
+        return self.user

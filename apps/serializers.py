@@ -13,7 +13,7 @@ class RoundSerializer(serializers.ModelSerializer):
         model = Round
         fields = ("question", "background_id", )
 
-    # user_id field를 서버에서 채워줘야하므로 ModelSerializer의 create 메소드를 오버라이딩
+    # user field를 서버에서 채워줘야하므로 ModelSerializer의 create 메소드를 오버라이딩
     def create(self, validated_data):
         round = Round(**validated_data)
         # request context의 user에 접근
@@ -22,7 +22,7 @@ class RoundSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user
-        round.user_id = user
+        round.user = user
         round.save()
         return round
 
@@ -41,7 +41,7 @@ class PickSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pick
-        fields = ("yes_no", "round_id", )
+        fields = ("yes_no", "round", )
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -58,18 +58,18 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "like", "is_liked", "create_date", )
 
     def like_or_not(self, obj):
-        user_id = self.context.get("request").user.id
+        user = self.context.get("request").user
         try:
-            obj.commentlike_set.get(user_id=user_id)
+            obj.commentlike_set.get(user=user)
             return True
         except ObjectDoesNotExist:
             return False
 
     def get_nickname(self, obj):
         # obj(Comment)의 정보를 가지고 대응되는 RoundNickname 인스턴스를 검색
-        pick_id = obj.pick_id
-        roundnickname = RoundNickname.objects.get(user_id=pick_id.user_id, round_id=pick_id.round_id)
-        return roundnickname.nickname_id.nickname
+        pick = obj.pick
+        roundnickname = RoundNickname.objects.get(user=pick.user, round=pick.round)
+        return roundnickname.nickname.nickname
 
     # Pick하지 않은 유저가 요청했을 경우에는 어떻게 처리하면 좋을까?
     # 1) get_object_or_404 메소드를 사용해서 404 Response를 발생
@@ -80,13 +80,13 @@ class CommentSerializer(serializers.ModelSerializer):
         # Generic View가 Serializer를 사용할때, context를 채워준다.
         # 필요한 정보들을 얻을 수 있다.
         # http://stackoverflow.com/questions/14921552/rest-framework-serializer-method
-        user_id = self.context.get("request").user.id
+        user = self.context.get("request").user
         round_id = int(self.context.get("view").kwargs["round_id"])
         # Pick 레코드가 존재하지 않는 경우에 대한 에러 처리 필요함.
         # get_object_or_404 메소드를 사용하는 방법이 하나 있겠음.
-        pick_id = Pick.objects.get(user_id=user_id, round_id=round_id)
+        pick = Pick.objects.get(user=user, round_id=round_id)
 
-        comment.pick_id = pick_id
+        comment.pick = pick
         comment.save()
         return comment
 
@@ -97,35 +97,36 @@ class RecommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ("id", "nickname", "content", "like", "is_liked", "create_date", "comment_id")
+        fields = ("id", "nickname", "content", "like", "is_liked", "create_date", "parent")
         read_only_fields = ("id", "like", "is_liked", "create_date", )
 
     def like_or_not(self, obj):
-        user_id = self.context.get("request").user.id
+        user = self.context.get("request").user
         try:
-            obj.commentlike_set.get(user_id=user_id)
+            obj.commentlike_set.get(user=user)
             return True
         except ObjectDoesNotExist:
             return False
 
     def get_nickname(self, obj):
         # obj(Comment)의 정보를 가지고 대응되는 RoundNickname 인스턴스를 검색
-        pick_id = obj.pick_id
-        roundnickname = RoundNickname.objects.get(user_id=pick_id.user_id, round_id=pick_id.round_id)
-        return roundnickname.nickname_id.nickname
+        pick = obj.pick
+        roundnickname = RoundNickname.objects.get(user=pick.user, round=pick.round)
+        return roundnickname.nickname.nickname
 
     def create(self, validated_data):
-        comment = Comment(**validated_data)
+        recomment = Comment(**validated_data)
         comment_id = int(self.context.get("view").kwargs["comment_id"])
+        comment = Comment.objects.get(id=comment_id)
 
-        # 1) Comment에서 해당 댓글의 pick_id를 얻은 후, Pick에서 round_id를 구함.
-        # 2) user_id와 round_id를 통해서 대댓글을 남기는 사람의 pick_id 정보를 이용
-        comment_pick_id = Comment.objects.get(id=comment_id).pick_id_id
-        round_id = Pick.objects.get(id=comment_pick_id).round_id
-        user_id = self.context.get("request").user.id
-        pick_id = Pick.objects.get(user_id=user_id, round_id=round_id)
+        # 1) Comment에서 해당 댓글의 pick을 얻은 후, pick에서 round를 구함.
+        # 2) user와 round를 통해서 대댓글을 남기는 사람의 pick 정보를 이용
+        comment_pick = comment.pick
+        comment_round = comment_pick.round
+        recomment_user = self.context.get("request").user
+        recomment_pick = Pick.objects.get(user=recomment_user, round=comment_round)
 
-        comment.pick_id = pick_id
-        comment.comment_id_id = comment_id
-        comment.save()
-        return comment
+        recomment.pick = recomment_pick
+        recomment.parent = comment
+        recomment.save()
+        return recomment

@@ -75,25 +75,25 @@ def editRound(request, round_id):
 @transaction.atomic
 def pick(request):
     if request.method == 'GET':  # 더미
-        picks_round = Pick.objects.filter(user_id=request.user)
+        picks_round = Pick.objects.filter(user=request.user)
         picks_round_list = []
         for cnt, pick in enumerate(picks_round):
             picks_round_list.append({})
-            picks_round_list[cnt]['id'] = pick.round_id.id
-            picks_round_list[cnt]['question'] = pick.round_id.question
+            picks_round_list[cnt]['id'] = pick.round.id
+            picks_round_list[cnt]['question'] = pick.round.question
             picks_round_list[cnt]['yes_no'] = int(pick.yes_no)
-            picks_round_list[cnt]['create_date'] = pick.round_id.create_date
-            picks_round_list[cnt]['member'] = pick.round_id.get_member()
-            picks_round_list[cnt]['complete'] = pick.round_id.complete
+            picks_round_list[cnt]['create_date'] = pick.round.create_date
+            picks_round_list[cnt]['member'] = pick.round.get_member()
+            picks_round_list[cnt]['complete'] = pick.round.complete
         return Response(picks_round_list)
     if request.method == 'POST':
         serializer = PickSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user_id=request.user)
-            nickname_id = RoundNickname.objects.next_nickname_id(request.data['round_id'])
-            RoundNickname.objects.create(user_id=request.user,
-                                         round_id_id=request.data['round_id'],
-                                         nickname_id_id=nickname_id)
+            serializer.save(user=request.user)
+            nickname_id = RoundNickname.objects.next_nickname_id(request.data['round'])
+            RoundNickname.objects.create(user=request.user,
+                                         round_id=request.data['round'],
+                                         nickname_id=nickname_id)
             return Response()
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -128,7 +128,7 @@ class CommentListCreate(ListCreateAPIView):
     # Comment의 목록을 필터링해줄 queryset을 반환하는 get_queryset을 오버라이딩.
     # URI에서 round_id 값을 뽑아서, 해당 Round에 달린 comment 정보만 반환한다.
     def get_queryset(self):
-        return Comment.objects.filter(pick_id__round_id=self.kwargs["round_id"])
+        return Comment.objects.filter(pick__round_id=self.kwargs["round_id"])
 
 
 @api_view(['PUT', 'DELETE'])
@@ -149,7 +149,7 @@ class RecommentListCreate(ListCreateAPIView):
     serializer_class = RecommentSerializer
 
     def get_queryset(self):
-        return Comment.objects.filter(comment_id=self.kwargs["comment_id"], is_active=1)
+        return Comment.objects.filter(parent_id=self.kwargs["comment_id"], is_active=1)
 
 
 @api_view(['PUT', 'DELETE'])
@@ -187,4 +187,4 @@ class MyRoundList(ListAPIView):
     # 자신이 생성한 라운드들만 받아오도록 get_queryset 메소드를 오버라이딩
     def get_queryset(self):
         user = self.request.user
-        return Round.objects.filter(user_id=user.id)
+        return Round.objects.filter(user=user)
