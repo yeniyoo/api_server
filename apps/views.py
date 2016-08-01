@@ -93,12 +93,15 @@ def pick(request):
     if request.method == 'POST':
         serializer = PickSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
-            nickname_id = RoundNickname.objects.next_nickname_id(request.data['round'])
-            RoundNickname.objects.create(user=request.user,
-                                         round_id=request.data['round'],
-                                         nickname_id=nickname_id)
-            return Response()
+            try:
+                serializer.save(user=request.user)
+                nickname_id = RoundNickname.objects.next_nickname_id(request.data['round'])
+                RoundNickname.objects.create(user=request.user,
+                                             round_id=request.data['round'],
+                                             nickname_id=nickname_id)
+                return Response()
+            except:
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -132,7 +135,7 @@ class CommentListCreate(ListCreateAPIView):
     # Comment의 목록을 필터링해줄 queryset을 반환하는 get_queryset을 오버라이딩.
     # URI에서 round_id 값을 뽑아서, 해당 Round에 달린 comment 정보만 반환한다.
     def get_queryset(self):
-        return Comment.objects.filter(pick__round_id=self.kwargs["round_id"])
+        return Comment.objects.filter(pick__round_id=self.kwargs["round_id"], parent=None)
 
 
 @api_view(['PUT', 'DELETE'])
