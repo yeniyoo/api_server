@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import BackgroundImage
 from .models import Comment
+from .models import CommentLike
 from .models import Pick
 from .models import Round
 from .models import RoundNickname
@@ -18,6 +19,10 @@ class CommentAdmin(admin.ModelAdmin):
     list_display_links = ["content", ]
 
 
+class CommentLikeAdmin(admin.ModelAdmin):
+    pass
+
+
 class PickAdmin(admin.ModelAdmin):
     list_display = ["id", "get_username", "round"]
 
@@ -29,6 +34,7 @@ class RoundAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(BackgroundImage, BackgroundImageAdmin)
 admin.site.register(Comment, CommentAdmin)
+admin.site.register(CommentLike, CommentLikeAdmin)
 admin.site.register(Pick, PickAdmin)
 admin.site.register(Round, RoundAdmin)
 admin.site.register(RoundNickname)

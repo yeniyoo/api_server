@@ -24,6 +24,7 @@ from .serializers import CommentSerializer, RecommentSerializer
 from .serializers import MyRoundSerializer
 from .serializers import PickSerializer
 from .serializers import RoundSerializer
+from .serializers import CommentLikeSerializer
 
 
 """
@@ -188,3 +189,10 @@ class MyRoundList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Round.objects.filter(user=user)
+
+
+class CommentLikeCreate(CreateAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = CommentLikeSerializer

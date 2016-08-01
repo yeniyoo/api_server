@@ -128,4 +128,4 @@ class CommentLike(models.Model):
         unique_together = ('user', 'comment')
 
     def __str__(self):
-        return self.user
+        return str(self.id)

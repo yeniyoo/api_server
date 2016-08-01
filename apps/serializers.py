@@ -6,6 +6,7 @@ from .models import Pick
 from .models import Round
 from .models import RoundNickname
 from .models import Comment
+from .models import CommentLike
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -130,3 +131,17 @@ class RecommentSerializer(serializers.ModelSerializer):
         recomment.parent = comment
         recomment.save()
         return recomment
+
+
+class CommentLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentLike
+        fields = ("comment", )
+
+    # user field를 채워주기 위해서 create 메소드를 오버라이딩
+    def create(self, validated_data):
+        comment_like = CommentLike(**validated_data)
+
+        comment_like.user = self.context.get("request").user
+        comment_like.save()
+        return comment_like
