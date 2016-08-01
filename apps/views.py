@@ -95,9 +95,9 @@ def pick(request):
         if serializer.is_valid():
             try:
                 serializer.save(user=request.user)
-                nickname_id = RoundNickname.objects.next_nickname_id(request.data['round'])
+                nickname_id = RoundNickname.objects.next_nickname_id(request.data['round_id'])
                 RoundNickname.objects.create(user=request.user,
-                                             round_id=request.data['round'],
+                                             round_id=request.data['round_id'],
                                              nickname_id=nickname_id)
                 return Response()
             except:
