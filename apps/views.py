@@ -3,9 +3,11 @@ from random import randint
 from django.conf import settings
 from django.http import HttpResponse
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
+from rest_framework.generics import DestroyAPIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.authentication import TokenAuthentication
@@ -18,12 +20,14 @@ from rest_framework.response import Response
 from utils import createResponseData, baseURL
 from .models import BackgroundImage
 from .models import Comment
+from .models import CommentLike
 from .models import Pick, RoundNickname
 from .models import Round
 from .serializers import CommentSerializer, RecommentSerializer
 from .serializers import MyRoundSerializer
 from .serializers import PickSerializer
 from .serializers import RoundSerializer
+from .serializers import CommentLikeSerializer
 
 
 """
@@ -188,3 +192,28 @@ class MyRoundList(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Round.objects.filter(user=user)
+
+
+class CommentLikeCreate(CreateAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = CommentLikeSerializer
+
+
+class CommentLikeDestroy(DestroyAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    queryset = CommentLike.objects.all()
+    serializer_class = CommentLikeSerializer
+
+    def get_object(self):
+        user = self.request.user
+        comment_id = self.kwargs["comment_id"]
+
+        # CommentLike의 schema에서 user, comment는 unique한 조합
+        query_filter = {"user": user, "comment_id": comment_id}
+
+        obj = get_object_or_404(self.get_queryset(), **query_filter)
+        return obj
