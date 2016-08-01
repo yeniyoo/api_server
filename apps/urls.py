@@ -18,7 +18,7 @@ urlpatterns = [
 
     # like
     url(r'^/likes$', views.CommentLikeCreate.as_view()),
-    url(r'^/likes/(?P<id>[0-9]+)$', views.likeDown),
+    url(r'^/likes/(?P<comment_id>[0-9]+)$', views.CommentLikeDestroy.as_view()),
 
     # image viewer
     url(r'^/image/(?P<img>.*)$', views.imageViewer)
