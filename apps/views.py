@@ -134,8 +134,13 @@ class CommentListCreate(ListCreateAPIView):
 
     # Comment의 목록을 필터링해줄 queryset을 반환하는 get_queryset을 오버라이딩.
     # URI에서 round_id 값을 뽑아서, 해당 Round에 달린 comment 정보만 반환한다.
+    # URI GET parameter에서 yes_no 값을 뽑아서, 해당 진영의 comment 정보만 반환한다.
     def get_queryset(self):
-        return Comment.objects.filter(pick__round_id=self.kwargs["round_id"], parent=None)
+        return Comment.objects.filter(
+            pick__round_id=self.kwargs["round_id"],
+            pick__yes_no=self.request.GET["yes_no"],
+            parent=None
+        )
 
 
 @api_view(['PUT', 'DELETE'])
