@@ -143,5 +143,9 @@ class CommentLikeSerializer(serializers.ModelSerializer):
         comment_like = CommentLike(**validated_data)
 
         comment_like.user = self.context.get("request").user
+        # Comment의 like를 추가
+        comment_like.comment.like += 1
+        comment_like.comment.save()
+        # CommentLike를 생성
         comment_like.save()
         return comment_like
