@@ -140,10 +140,11 @@ class CommentLikeSerializer(serializers.ModelSerializer):
 
     # user field를 채워주기 위해서 create 메소드를 오버라이딩
     def create(self, validated_data):
+        # 클라이언트에게 받은 데이터로 CommentLike 인스턴스 생성
         comment_like = CommentLike(**validated_data)
-
+        # Request에서 user 정보 추출
         comment_like.user = self.context.get("request").user
-        # Comment의 like를 추가
+        # Comment의 like 필드값을 업데이트
         comment_like.comment.like += 1
         comment_like.comment.save()
         # CommentLike를 생성

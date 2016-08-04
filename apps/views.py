@@ -220,17 +220,16 @@ class CommentLikeDestroy(DestroyAPIView):
         user = self.request.user
         comment_id = self.kwargs["comment_id"]
 
-        # CommentLike의 schema에서 user, comment는 unique한 조합
+        # CommentLike의 schema에서 (user, comment) 조합은 unique
         query_filter = {"user": user, "comment_id": comment_id}
-
         obj = get_object_or_404(self.get_queryset(), **query_filter)
         return obj
 
-    # Comment의 like 필드값도 바꿔야하므로 delete 메소드를 오버라이딩
+    # Comment의 like 필드값을 업데이트하기 위해 delete 메소드를 오버라이딩
     def delete(self, request, *args, **kwargs):
         # Comment의 like값 감소
         comment = self.get_object().comment
         comment.like -= 1
         comment.save()
-        # CommentLike 제거
+        # CommentLike 제거는 기존의 delete 메소드를 그대로 사용
         return super(CommentLikeDestroy, self).delete(request, *args, **kwargs)
