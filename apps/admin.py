@@ -5,7 +5,6 @@ from .models import Comment
 from .models import CommentLike
 from .models import Pick
 from .models import Round
-from .models import RoundNickname
 
 
 # Define ModelAdmins
@@ -37,4 +36,3 @@ admin.site.register(Comment, CommentAdmin)
 admin.site.register(CommentLike, CommentLikeAdmin)
 admin.site.register(Pick, PickAdmin)
 admin.site.register(Round, RoundAdmin)
-admin.site.register(RoundNickname)

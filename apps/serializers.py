@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 from .models import Pick
 from .models import Round
-from .models import RoundNickname
 from .models import Comment
 from .models import CommentLike
 
@@ -67,10 +66,8 @@ class CommentSerializer(serializers.ModelSerializer):
             return False
 
     def get_nickname(self, obj):
-        # obj(Comment)의 정보를 가지고 대응되는 RoundNickname 인스턴스를 검색
-        pick = obj.pick
-        roundnickname = RoundNickname.objects.get(user=pick.user, round=pick.round)
-        return roundnickname.nickname.nickname
+        # obj(Comment)의 정보를 가지고 nickname 값을 반환
+        return obj.pick.nickname.nickname
 
     # Pick하지 않은 유저가 요청했을 경우에는 어떻게 처리하면 좋을까?
     # 1) get_object_or_404 메소드를 사용해서 404 Response를 발생
@@ -110,10 +107,8 @@ class RecommentSerializer(serializers.ModelSerializer):
             return False
 
     def get_nickname(self, obj):
-        # obj(Comment)의 정보를 가지고 대응되는 RoundNickname 인스턴스를 검색
-        pick = obj.pick
-        roundnickname = RoundNickname.objects.get(user=pick.user, round=pick.round)
-        return roundnickname.nickname.nickname
+        # obj(Comment)의 정보를 가지고 nickname 값을 반환
+        return obj.pick.nickname.nickname
 
     def create(self, validated_data):
         recomment = Comment(**validated_data)

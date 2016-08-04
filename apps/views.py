@@ -21,7 +21,7 @@ from utils import createResponseData, baseURL
 from .models import BackgroundImage
 from .models import Comment
 from .models import CommentLike
-from .models import Pick, RoundNickname
+from .models import Pick
 from .models import Round
 from .serializers import CommentSerializer, RecommentSerializer
 from .serializers import MyRoundSerializer
@@ -93,15 +93,19 @@ def pick(request):
     if request.method == 'POST':
         serializer = PickSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                serializer.save(user=request.user)
-                nickname_id = RoundNickname.objects.next_nickname_id(request.data['round'])
-                RoundNickname.objects.create(user=request.user,
-                                             round_id=request.data['round'],
-                                             nickname_id=nickname_id)
-                return Response()
-            except:
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            nickname_id = Pick.objects.next_nickname_id(request.data['round'])
+            serializer.save(user=request.user,
+                            nickname_id=nickname_id)
+            return Response()
+            # try:
+            #     serializer.save(user=request.user)
+            #     nickname_id = Pick.objects.next_nickname_id(request.data['round'])
+            #     Pick.objects.create(user=request.user,
+            #                         round_id=request.data['round'],
+            #                         nickname_id=nickname_id)
+            #     return Response()
+            # except:
+            #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -54,30 +54,18 @@ class Round(models.Model):
         return self.pick_set.count()
 
 
-class RoundNicknameManager(models.Manager):
-    # RoundName에 저장되어있는 해당 Round의 닉네임 인덱스 중 최대값을 구해 다음 인덱스를 반환.
+class PickManager(models.Manager):
     def next_nickname_id(self, round_id):
-        n_max = RoundNickname.objects.filter(round_id=round_id).aggregate(Max('nickname_id'))
-        current_nickname_index = 0 if n_max['nickname_id__max'] is None else int(n_max['nickname_id__max'])
-        return current_nickname_index + 1
-
-
-class RoundNickname(models.Model):
-    create_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    round = models.ForeignKey(Round)
-    nickname = models.ForeignKey(Nickname)
-
-    objects = RoundNicknameManager()
-
-    class Meta:
-        unique_together = (('user', 'round'),
-                           ('round', 'nickname'))
-
-    def __str__(self):
-        return self.nickname.nickname
+        # 해당 round의 pick들만 선택
+        picks = self.get_queryset().filter(round_id=round_id)
+        print(round_id)
+        # 가장 큰 nickname(=가장 최근) pick를 선택
+        max_nickname_pick = picks.aggregate(Max('nickname_id'))
+        print(max_nickname_pick)
+        # pick이 없다면 1, 존재한다면 해당 pick의 nickname id값에 1을 더해서 반환
+        max_nickname_id = 0 if max_nickname_pick['nickname_id__max'] is None \
+            else int(max_nickname_pick['nickname_id__max'])
+        return max_nickname_id + 1
 
 
 class Pick(models.Model):
@@ -89,6 +77,10 @@ class Pick(models.Model):
     # 그러니 on_delete = models.CASCADE 옵션을 추가해줘야 할 것
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     round = models.ForeignKey(Round)
+    # RoundNickname model을 제거하고, Pick에 nickname field를 추가
+    nickname = models.ForeignKey(Nickname)
+
+    objects = PickManager()
 
     class Meta:
         unique_together = ('user', 'round')
