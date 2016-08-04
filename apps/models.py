@@ -99,7 +99,9 @@ class Comment(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     pick = models.ForeignKey(Pick)
-    parent = models.ForeignKey("self", null=True, default=None)
+    # default 값을 None으로 주려면 null=True가 필요
+    # admin site에서 Comment를 조작하기 위해서는 blank=True가 필요
+    parent = models.ForeignKey("self", null=True, blank=True, default=None)
 
     def __str__(self):
         return str(self.id)
