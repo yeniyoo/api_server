@@ -18,6 +18,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from utils import createResponseData, baseURL
+from .exceptions import NoYesOrNoException
 from .models import BackgroundImage
 from .models import Comment
 from .models import CommentLike
@@ -142,9 +143,18 @@ class CommentListCreate(ListCreateAPIView):
     def get_queryset(self):
         return Comment.objects.filter(
             pick__round_id=self.kwargs["round_id"],
-            pick__yes_no=self.request.GET["yes_no"],
+            pick__yes_no=self.request.GET.get("yes_no"),
             parent=None
         )
+
+    # GET 요청에 "yes_no" params가 없는 경우에 대한 에러처리를 위해 list를 오버라이딩
+    def list(self, request, *args, **kwargs):
+        try:
+            # "yes_no" 가 없으면 에러 발생
+            assert self.request.GET.get("yes_no") is not None
+            return super(CommentListCreate, self).list(request, *args, **kwargs)
+        except AssertionError:
+            raise NoYesOrNoException()
 
 
 @api_view(['PUT', 'DELETE'])
