@@ -1,6 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 
 from .models import Pick
 from .models import Round
@@ -80,13 +82,13 @@ class CommentSerializer(serializers.ModelSerializer):
         # http://stackoverflow.com/questions/14921552/rest-framework-serializer-method
         user = self.context.get("request").user
         round_id = int(self.context.get("view").kwargs["round_id"])
-        # Pick 레코드가 존재하지 않는 경우에 대한 에러 처리 필요함.
-        # get_object_or_404 메소드를 사용하는 방법이 하나 있겠음.
-        pick = Pick.objects.get(user=user, round_id=round_id)
-
-        comment.pick = pick
-        comment.save()
-        return comment
+        try:
+            pick = Pick.objects.get(user=user, round_id=round_id)
+            comment.pick = pick
+            comment.save()
+            return comment
+        except ObjectDoesNotExist:
+            raise NotFound("No pick was found.")
 
 
 class RecommentSerializer(serializers.ModelSerializer):
