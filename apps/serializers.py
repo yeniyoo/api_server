@@ -1,5 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
@@ -88,7 +87,7 @@ class CommentSerializer(serializers.ModelSerializer):
             comment.save()
             return comment
         except ObjectDoesNotExist:
-            raise NotFound("No pick was found.")
+            raise NotFound("Please, pick round first before requesting comments.")
 
 
 class RecommentSerializer(serializers.ModelSerializer):
