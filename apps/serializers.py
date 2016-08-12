@@ -1,4 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import F
+from django.db.utils import IntegrityError
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
@@ -7,6 +10,7 @@ from .models import Pick
 from .models import Round
 from .models import Comment
 from .models import CommentLike
+from .exceptions import BadRequestException
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -132,17 +136,38 @@ class RecommentSerializer(serializers.ModelSerializer):
 class CommentLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentLike
-        fields = ("comment", )
+        exclude = ("user", "comment", )
 
-    # user field를 채워주기 위해서 create 메소드를 오버라이딩
+    # 오버라이딩
     def create(self, validated_data):
-        # 클라이언트에게 받은 데이터로 CommentLike 인스턴스 생성
-        comment_like = CommentLike(**validated_data)
-        # Request에서 user 정보 추출
-        comment_like.user = self.context.get("request").user
-        # Comment의 like 필드값을 업데이트
-        comment_like.comment.like += 1
-        comment_like.comment.save()
-        # CommentLike를 생성
-        comment_like.save()
+        # Request 객체에서 user 정보 획득
+        user = self.context.get("request").user
+
+        # URI pattern 에서 comment 정보 획득
+        comment = get_object_or_404(Comment, id=self.context.get("view").kwargs["comment_id"])
+
+        # Comment 가 달린 Round 에 대한 Pick 존재성 확인
+        try:
+            pick = Pick.objects.get(user=user, round_id=comment.pick.round_id)
+        except ObjectDoesNotExist:
+            raise BadRequestException("You should pick the round first.")
+
+        # 해당 Comment 와 동일 yes_no 여부 확인
+        try:
+            assert comment.pick.yes_no == pick.yes_no
+        except AssertionError:
+            raise BadRequestException("You have different yes_no with comment you try to like.")
+
+        # CommentLike 객체 생성
+        try:
+            comment_like = CommentLike.objects.create(
+                user=user,
+                comment=get_object_or_404(Comment, id=self.context.get("view").kwargs["comment_id"]),
+            )
+        except IntegrityError:
+            raise BadRequestException("You already like this comment.")
+
+        # Comment 의 like 필드값을 update
+        # 더 좋은 SQL 구문 하용을 유도하도록 F expression 사용
+        Comment.objects.filter(id=comment_like.comment_id).update(like=F("like") + 1)
         return comment_like

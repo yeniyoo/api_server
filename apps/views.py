@@ -3,6 +3,7 @@ from random import randint
 from django.conf import settings
 from django.http import HttpResponse
 from django.db import transaction
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 from rest_framework import status
@@ -10,12 +11,15 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.generics import DestroyAPIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.decorators import authentication_classes
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import DestroyModelMixin
 
 from utils import createResponseData, baseURL
 from .exceptions import NoYesOrNoException
@@ -216,34 +220,29 @@ class MyRoundList(ListAPIView):
         return Round.objects.filter(user=user)
 
 
-class CommentLikeCreate(CreateAPIView):
+class CommentLikeCreateDestroy(CreateModelMixin, DestroyModelMixin, GenericAPIView):
     authentication_classes = (TokenAuthentication, )
     permission_classes = (IsAuthenticated, )
 
     serializer_class = CommentLikeSerializer
 
-
-class CommentLikeDestroy(DestroyAPIView):
-    authentication_classes = (TokenAuthentication, )
-    permission_classes = (IsAuthenticated, )
-
-    queryset = CommentLike.objects.all()
-    serializer_class = CommentLikeSerializer
+    # get_queryset 메소드와 get_object 메소드의 역할 구분에 대해서는 헷갈리는 부분.
+    def get_queryset(self):
+        return get_object_or_404(
+            CommentLike,
+            user=self.request.user,
+            comment_id=self.kwargs["comment_id"]
+        )
 
     def get_object(self):
-        user = self.request.user
-        comment_id = self.kwargs["comment_id"]
+        return self.get_queryset()
 
-        # CommentLike의 schema에서 (user, comment) 조합은 unique
-        query_filter = {"user": user, "comment_id": comment_id}
-        obj = get_object_or_404(self.get_queryset(), **query_filter)
-        return obj
+    # CreateAPIView 의 내용을 가져옴.
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
-    # Comment의 like 필드값을 업데이트하기 위해 delete 메소드를 오버라이딩
+    # DestroyAPIView 의 내용을 가져옴.
     def delete(self, request, *args, **kwargs):
-        # Comment의 like값 감소
-        comment = self.get_object().comment
-        comment.like -= 1
-        comment.save()
-        # CommentLike 제거는 기존의 delete 메소드를 그대로 사용
-        return super(CommentLikeDestroy, self).delete(request, *args, **kwargs)
+        # 해당 Comment의 like 필드값을 1 감소시킨다.
+        Comment.objects.filter(id=self.get_object().comment_id).update(like=F("like")-1)
+        return self.destroy(request, *args, **kwargs)
