@@ -1,5 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F
+from django.db.utils import IntegrityError
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
@@ -8,6 +10,7 @@ from .models import Pick
 from .models import Round
 from .models import Comment
 from .models import CommentLike
+from .exceptions import BadRequestException
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -137,13 +140,34 @@ class CommentLikeSerializer(serializers.ModelSerializer):
 
     # 오버라이딩
     def create(self, validated_data):
-        # CommentLike 인스턴스를 생성
-        # user 정보는 request에서, comment 정보는 URI pattern에서 획득
-        comment_like = CommentLike.objects.create(
-            user=self.context.get("request").user,
-            comment=Comment.objects.get(id=self.context.get("view").kwargs["comment_id"])
-        )
-        # 해당 Comment의 like 필드값을 update
+        # Request 객체에서 user 정보 획득
+        user = self.context.get("request").user
+
+        # URI pattern 에서 comment 정보 획득
+        comment = get_object_or_404(Comment, id=self.context.get("view").kwargs["comment_id"])
+
+        # Comment 가 달린 Round 에 대한 Pick 존재성 확인
+        try:
+            pick = Pick.objects.get(user=user, round_id=comment.pick.round_id)
+        except ObjectDoesNotExist:
+            raise BadRequestException("You should pick the round first.")
+
+        # 해당 Comment 와 동일 yes_no 여부 확인
+        try:
+            assert comment.pick.yes_no == pick.yes_no
+        except AssertionError:
+            raise BadRequestException("You have different yes_no with comment you try to like.")
+
+        # CommentLike 객체 생성
+        try:
+            comment_like = CommentLike.objects.create(
+                user=user,
+                comment=get_object_or_404(Comment, id=self.context.get("view").kwargs["comment_id"]),
+            )
+        except IntegrityError:
+            raise BadRequestException("You already like this comment.")
+
+        # Comment 의 like 필드값을 update
         # 더 좋은 SQL 구문 하용을 유도하도록 F expression 사용
         Comment.objects.filter(id=comment_like.comment_id).update(like=F("like") + 1)
         return comment_like
