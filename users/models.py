@@ -43,13 +43,15 @@ class MyUser(AbstractBaseUser,  PermissionsMixin):
     nickname = models.CharField(
         max_length=10,
         null=True,
-        default=None)
+        default=None,
+        blank=True
+    )
     gender = models.BooleanField(default=True)
-    age = models.IntegerField(null=True, default=None)
+    age = models.IntegerField(null=True, default=None, blank=True)
     point = models.IntegerField(default=0)
     join_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
-    withdraw_date = models.DateTimeField(null=True, default=None)
+    withdraw_date = models.DateTimeField(null=True, default=None, blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
