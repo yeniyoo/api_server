@@ -4,9 +4,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
 from rest_framework import status
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import RetrieveModelMixin
+from rest_framework.mixins import UpdateModelMixin
 
-from users.serializers import UserSerializers
-from users.models import MyUser
+from .serializers import UserSerializer
+from .models import MyUser
 from utils import createResponseData, fbGraphApi
 
 
@@ -25,7 +29,7 @@ def facebookAuth(request):
                 # 회원가입
                 fb_info['gender'] = True if (fb_info['gender'] == 'male') else False
                 fb_info['fb_id'] = fb_info.pop('id')  # insert serializer
-                serializer = UserSerializers(data=fb_info)
+                serializer = UserSerializer(data=fb_info)
                 if serializer.is_valid():
                     user = MyUser.objects.filter(fb_id=serializer.save(), is_active=1)
                 else:
@@ -58,3 +62,14 @@ def ageSetting(request):
         # age setting
         MyUser.objects.filter(fb_id=request.user).update(age=age)
         return Response()
+
+
+# class UserDetail(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):
+class UserDetail(RetrieveUpdateAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user

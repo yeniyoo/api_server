@@ -6,7 +6,7 @@ from users import views
 urlpatterns = [
     url(r'^/facebook-auth$', views.facebookAuth),
     # age setting
-    url(r'^$', views.ageSetting),
+    url(r'^$', views.UserDetail.as_view()),
     # my round
     url(r'^/rounds$', MyRoundList.as_view()),
 ]
