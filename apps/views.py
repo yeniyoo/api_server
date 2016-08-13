@@ -1,6 +1,7 @@
 from random import randint
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.db import transaction
 from django.db.models import F
@@ -8,7 +9,6 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
-from rest_framework.generics import DestroyAPIView
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.generics import GenericAPIView
@@ -23,6 +23,7 @@ from rest_framework.mixins import DestroyModelMixin
 
 from utils import createResponseData, baseURL
 from .exceptions import NoYesOrNoException
+from .exceptions import BadRequestException
 from .models import BackgroundImage
 from .models import Comment
 from .models import CommentLike
@@ -98,19 +99,13 @@ def pick(request):
     if request.method == 'POST':
         serializer = PickSerializer(data=request.data)
         if serializer.is_valid():
-            nickname_id = Pick.objects.next_nickname_id(request.data['round'])
-            serializer.save(user=request.user,
-                            nickname_id=nickname_id)
-            return Response()
-            # try:
-            #     serializer.save(user=request.user)
-            #     nickname_id = Pick.objects.next_nickname_id(request.data['round'])
-            #     Pick.objects.create(user=request.user,
-            #                         round_id=request.data['round'],
-            #                         nickname_id=nickname_id)
-            #     return Response()
-            # except:
-            #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            try:
+                Pick.objects.get(user=request.user, round_id=request.data["round"])
+                raise BadRequestException("You already pick the round.")
+            except ObjectDoesNotExist:
+                nickname_id = Pick.objects.next_nickname_id(request.data['round'])
+                serializer.save(user=request.user, nickname_id=nickname_id)
+                return Response(data=serializer.data)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
