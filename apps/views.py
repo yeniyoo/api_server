@@ -58,7 +58,8 @@ def round(request):
                 "id": random_round.id,
                 "question": random_round.question,
                 "create_date": random_round.create_date,
-                "member": random_round.get_member()
+                "member": random_round.get_member(),
+                "comment": Comment.objects.filter(pick__round=random_round).count()
             }
         ]
         # return Response(createResponseData(0, "success", data))
