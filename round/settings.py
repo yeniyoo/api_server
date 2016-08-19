@@ -26,7 +26,7 @@ SECRET_KEY = '!vq=+j+fohbyz97h2w0lknr8w4quf+uu@$=ft7gyqxp(lry^j^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'http://rounds.azurewebsites.net/']
 
 
 # Application definition
