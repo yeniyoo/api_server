@@ -102,15 +102,10 @@ WSGI_APPLICATION = 'round.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': dbConfig()["database"],
-        'USER': dbConfig()["user"],
-        'PASSWORD': dbConfig()["password"],
-        'HOST': dbConfig()["host"],
-        'PORT': '3306'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
