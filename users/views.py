@@ -1,12 +1,14 @@
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.authtoken.models import Token
 from rest_framework import status
+from rest_framework.generics import RetrieveUpdateAPIView
 
-from users.serializers import UserSerializers
-from users.models import MyUser
+from .serializers import UserSerializer
+from .serializers import TokenSerializer
+from .models import MyUser
 from utils import createResponseData, fbGraphApi
 
 
@@ -25,7 +27,7 @@ def facebookAuth(request):
                 # 회원가입
                 fb_info['gender'] = True if (fb_info['gender'] == 'male') else False
                 fb_info['fb_id'] = fb_info.pop('id')  # insert serializer
-                serializer = UserSerializers(data=fb_info)
+                serializer = UserSerializer(data=fb_info)
                 if serializer.is_valid():
                     user = MyUser.objects.filter(fb_id=serializer.save(), is_active=1)
                 else:
@@ -45,16 +47,25 @@ def facebookAuth(request):
             )
 
 
-@api_view(['PUT'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def ageSetting(request):
-    if request.method == 'PUT':
-        try:  # request data check
-            age = request.data['age']
-        except:
-            return Response(createResponseData(1, "Invalid parameter", None),
-                            status=status.HTTP_400_BAD_REQUEST)
-        # age setting
-        MyUser.objects.filter(fb_id=request.user).update(age=age)
-        return Response()
+class UserDetail(RetrieveUpdateAPIView):
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+@api_view(['GET', 'POST', 'PATCH'])
+@authentication_classes([TokenAuthentication, ])
+def users(request):
+    if request.method == 'POST':
+        # TokenSerializer가 로직을 담당한다.
+        # HTTP Response header에 auth_token: token를 넣은 뒤 반환한다.
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        key = serializer.save()
+        return Response(status=status.HTTP_201_CREATED, headers={'auth-token': key})
+    else:
+        return UserDetail.as_view()(request)
